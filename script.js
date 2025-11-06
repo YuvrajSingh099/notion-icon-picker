@@ -1,5 +1,7 @@
-
 document.addEventListener('DOMContentLoaded', () => {
+
+let currentAppliedColor = '#000000';
+
 //toggle
 const toggle = document.getElementById('theme-toggle');
 const label = document.getElementById('theme-label');
@@ -781,9 +783,9 @@ const items = [
 let spath;
 function modeMode() {
     if (!toggle.checked) {
-        spath = '../notion_icons_white/';
+        spath = './notion_icons_white/';
     } else {
-        spath = '../notion_icons_black/';
+        spath = './notion_icons_black/';
     }
 }
 modeMode();//Loaded once
@@ -823,8 +825,6 @@ function showSuggestions() {
 
             // ADD THIS LINE - Actually load the SVG inline
             loadSVGInline(svgPath, finalQuery);
-
-            logToPage(svgPath);
         });
 
         suggestionsList.appendChild(li);
@@ -871,56 +871,130 @@ function loadSVGInline(svgPath, altText) {
 
 
 
-//Color changer
 
-const colorBoxes = document.querySelectorAll('.color-box');
+
+
+
+
+
+
+
+
+
+
+
+
+//Color changer
+    const colorBoxes = document.querySelectorAll('.color-box');
+    const colorWheel = document.getElementById('color-wheel');
 
 // Set each box's background color from data-color attribute
-colorBoxes.forEach(box => {
-    box.style.backgroundColor = box.getAttribute('data-color');
-});
+    colorBoxes.forEach(box => {
+        box.style.backgroundColor = box.getAttribute('data-color');
+    });
 
-colorBoxes.forEach(box => {
-    box.addEventListener('click', () => {
-        const selectedColor = box.getAttribute('data-color');
+// Handle color box clicks
+    colorBoxes.forEach(box => {
+        box.addEventListener('click', () => {
+            const selectedColor = box.getAttribute('data-color');
 
-        // Remove 'selected' class from all boxes first
+            // Remove 'selected' class from all boxes first
+            colorBoxes.forEach(b => b.classList.remove('selected'));
+
+            // Add 'selected' class to clicked box
+            box.classList.add('selected');
+
+            // Update color wheel to match the selected color
+            colorWheel.value = selectedColor;
+
+            applyColorToIcon(selectedColor);
+        });
+    });
+
+// Handle color wheel input (real-time preview as you move the picker)
+    colorWheel.addEventListener('input', (e) => {
+        const selectedColor = e.target.value;
+
+        // Remove 'selected' class from all color boxes
         colorBoxes.forEach(b => b.classList.remove('selected'));
 
-        // Add 'selected' class to clicked box
-        box.classList.add('selected');
-
-        // ADD THIS LINE - Actually apply the color
         applyColorToIcon(selectedColor);
     });
-});
 
+// Handle color wheel change (when user finalizes the color choice)
+    colorWheel.addEventListener('change', (e) => {
+        const selectedColor = e.target.value;
+        applyColorToIcon(selectedColor);
+    });
 
-//
-function applyColorToIcon(color) {
-    const container = document.getElementById('iconContainer');
-    const svg = container.querySelector('svg');
+// Apply color to SVG icon
+    function applyColorToIcon(color) {
+        const container = document.getElementById('iconContainer');
+        const svg = container.querySelector('svg');
 
-    if (svg) {
-        // Change fill color of all paths in the SVG
-        const paths = svg.querySelectorAll('path, circle, rect, polygon, ellipse');
-        paths.forEach(shape => {
-            shape.setAttribute('fill', color);
-        });
+        if (svg) {
+            // Change fill color of all paths in the SVG
+            const paths = svg.querySelectorAll('path, circle, rect, polygon, ellipse');
+            paths.forEach(shape => {
+                shape.setAttribute('fill', color);
+            });
 
-        // Also set fill on the svg element itself
-        svg.style.fill = color;
-
+            // Also set fill on the svg element itself
+            svg.style.fill = color;
+            currentAppliedColor = color;
+        }
     }
-}
 
-//Output handles
-    function logToPage(message) {
-        console.log(message); // Log to console as usual
+//Save Handler
+    async function saveAndCopyIcon() {
+        const container = document.getElementById('iconContainer');
+        const svg = container.querySelector('svg');
 
-        const consoleOutput = document.getElementById('consoleOutput');
-        consoleOutput.textContent += message + '\n'; // Append message to the HTML element
+        if (!svg) {
+            alert('No icon loaded!');
+            return;
+        }
+
+        // Get the modified SVG content
+        const svgContent = new XMLSerializer().serializeToString(svg);
+
+        // Get original filename from dataset
+        const originalPath = svg.dataset.iconPath;
+
+        // Get the hex code without the #
+        const hexCode = currentAppliedColor.replace('#', '');
+
+        // Extract the icon query name from original path
+        let iconQuery = 'icon';
+        if (originalPath) {
+            const originalFilename = originalPath.split('/').pop();
+            iconQuery = originalFilename.replace('.svg', '');
+        }
+
+        // Build new filename: hexcode-icon-query.svg
+        const filename = `${hexCode}-${iconQuery}.svg`;
+
+        // Use global require (already available with nodeIntegration: true)
+        const { ipcRenderer, clipboard } = require('electron');
+
+        // Use IPC to save file
+        const result = await ipcRenderer.invoke('save-icon', svgContent, filename);
+
+        if (result.success) {
+            // Copy path to clipboard
+            await navigator.clipboard.writeText(result.path);
+
+        } else {
+            alert(`Error saving icon: ${result.error}`);
+        }
     }
+
+    // Add button click handler
+    const saveButton = document.getElementById('saveButton');
+    if (saveButton) {
+        saveButton.addEventListener('click', saveAndCopyIcon);
+    }
+
 
 });
 
