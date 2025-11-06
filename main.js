@@ -1,6 +1,6 @@
 const { app, Tray, BrowserWindow, ipcMain, clipboard } = require('electron')
 const path = require('path')
-
+const fs = require('fs')
 let tray = null
 let popupWindow = null
 
@@ -19,8 +19,8 @@ function createTray() {
 
 function createPopupWindow() {
     popupWindow = new BrowserWindow({
-        width: 320,
-        height: 420,
+        width: 1000,
+        height: 800,
         show: false,
         frame: false,
         resizable: false,
@@ -39,6 +39,31 @@ function createPopupWindow() {
 
     popupWindow.on('blur', () => { popupWindow.hide() })
 }
+
+ipcMain.handle('save-icon', async (event, svgContent, filename) => {
+    try {
+        const outputDir = path.join(app.getPath('downloads'), 'notion-icons-modified')
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true })
+        }
+
+        const filePath = path.join(outputDir, filename)
+        fs.writeFileSync(filePath, svgContent, 'utf-8')
+
+        return {
+            success: true,
+            path: filePath
+        }
+    } catch (error) {
+        console.error('Error saving icon:', error)
+        return {
+            success: false,
+            error: error.message
+        }
+    }
+})
+
+
 
 app.whenReady().then(() => {
     createTray()
