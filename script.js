@@ -777,8 +777,6 @@ const items = [
     'stroller',
 ];
 
-
-
 //Mode checker.
 let spath;
 function modeMode() {
@@ -868,21 +866,6 @@ function loadSVGInline(svgPath, altText) {
             console.error('Error loading SVG:', error);
         });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //Color changer
     const colorBoxes = document.querySelectorAll('.color-box');
