@@ -1,12 +1,54 @@
-const { app, Tray, BrowserWindow, ipcMain, clipboard } = require('electron')
+const { app, Tray, BrowserWindow, ipcMain, clipboard,Menu } = require('electron')
 const path = require('path')
 const fs = require('fs')
 let tray = null
 let popupWindow = null
 
+
+//system tray
 function createTray() {
     tray = new Tray(path.join(__dirname, 'assets', 'tray-icon.png'))
     tray.setToolTip('Notion Icon Picker')
+
+    // Create context menu
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Open Icon Picker',
+            click: () => {
+                if (popupWindow && !popupWindow.isDestroyed()) {
+                    popupWindow.show()
+                } else {
+                    createPopupWindow()
+                }
+            }
+        },
+        {
+            type: 'separator'
+        },
+        {
+            label: 'Run on Startup',
+            type: 'checkbox',
+            checked: app.getLoginItemSettings().openAtLogin,
+            click: (menuItem) => {
+                app.setLoginItemSettings({
+                    openAtLogin: menuItem.checked,
+                    openAsHidden: true  // Start minimized to tray
+                })
+            }
+        },
+        {
+            type: 'separator'
+        },
+
+        {
+            label: 'Quit',
+            click: () => {
+                app.quit()
+            }
+        }
+    ])
+
+    tray.setContextMenu(contextMenu)
 
     tray.on('click', () => {
         if (popupWindow && !popupWindow.isDestroyed()) {
@@ -15,14 +57,15 @@ function createTray() {
             createPopupWindow()
         }
     })
-}
 
+}
+//Main Window
 function createPopupWindow() {
     popupWindow = new BrowserWindow({
         width: 1000,
         height: 800,
         show: false,
-        frame: false,
+        frame: true,
         resizable: false,
         alwaysOnTop: true,
         skipTaskbar: true,
@@ -42,7 +85,7 @@ function createPopupWindow() {
 
 ipcMain.handle('save-icon', async (event, svgContent, filename) => {
     try {
-        const outputDir = path.join(app.getPath('downloads'), 'notion-icons-modified')
+        const outputDir = path.join(__dirname, 'saved-icons')
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true })
         }
@@ -69,3 +112,6 @@ app.whenReady().then(() => {
     createTray()
 })
 
+app.on('window-all-closed', (e) => {
+    e.preventDefault()
+})
