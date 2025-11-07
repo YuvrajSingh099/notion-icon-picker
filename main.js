@@ -85,7 +85,7 @@ function createPopupWindow() {
 
 ipcMain.handle('save-icon', async (event, svgContent, filename) => {
     try {
-        const outputDir = path.join(__dirname, 'saved-icons')
+        const outputDir = path.join(app.getPath('userData'), 'saved-icons');
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true })
         }
@@ -115,3 +115,4 @@ app.whenReady().then(() => {
 app.on('window-all-closed', (e) => {
     e.preventDefault()
 })
+
