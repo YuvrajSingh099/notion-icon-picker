@@ -7,6 +7,11 @@
 </head>
 <body>
 
+<!-- ✅ ADD: Settings Button -->
+<button id="settingsButton" class="btn btn--secondary" style="position: fixed; top: 16px; right: 16px; z-index: 1000;">
+    ⚙️ Settings
+</button>
+
 <div class="theme-switch-container">
     <span id="theme-label">Dark Mode</span>
     <label class="switch">
@@ -19,7 +24,7 @@
 
 <form id="search-form" class="search-container">
     <label for="search-input">
-        <input id="search-input" type="text" autocomplete="off"/>
+        <input id="search-input" type="text" autocomplete="off" placeholder="Search icons..."/>
     </label>
     <ul id="suggestions-list" class="suggestions"></ul>
 </form>
@@ -27,24 +32,23 @@
 <br/>
 
 <div class="color-selector">
-<div id="color-boxes">
-    <div class="color-box" data-color="#FFFFFF"></div>
-    <div class="color-box" data-color="#D3D3D3"></div>
-    <div class="color-box" data-color="#AA755F"></div>
-    <div class="color-box" data-color="#CA8E1B"></div>
-    <div class="color-box" data-color="#D87620"></div>
-    <div class="color-box" data-color="#2D9964"></div>
-    <div class="color-box" data-color="#2E7CD1"></div>
-    <div class="color-box" data-color="#8D5BC1"></div>
-    <div class="color-box" data-color="#C94079"></div>
-    <div class="color-box" data-color="#CD4945"></div>
-</div>
+    <div id="color-boxes">
+        <div class="color-box" data-color="#FFFFFF"></div>
+        <div class="color-box" data-color="#D3D3D3"></div>
+        <div class="color-box" data-color="#AA755F"></div>
+        <div class="color-box" data-color="#CA8E1B"></div>
+        <div class="color-box" data-color="#D87620"></div>
+        <div class="color-box" data-color="#2D9964"></div>
+        <div class="color-box" data-color="#2E7CD1"></div>
+        <div class="color-box" data-color="#8D5BC1"></div>
+        <div class="color-box" data-color="#C94079"></div>
+        <div class="color-box" data-color="#CD4945"></div>
+    </div>
 
     <div class="color-wheel-container">
         <label for="color-wheel">Custom Color:</label>
         <input type="color" id="color-wheel" value="#000000">
     </div>
-
 </div>
 
 <br/>
@@ -53,10 +57,35 @@
 
 <br/>
 
-<button id="saveButton" class="btn btn--primary">Save</button>
+<button id="saveButton" class="btn btn--primary">Save Icon</button>
 
 <br/>
 
-<script src="/script.js"></script>
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Settings</h2>
+
+        <!-- Keyboard Shortcut Setting -->
+        <div class="form-group">
+            <label class="form-label" for="shortcutInput">Global Keyboard Shortcut</label>
+            <input type="text" id="shortcutInput" class="form-control" placeholder="e.g., Ctrl+N">
+            <!-- ✅ FIXED: Added missing # for color attribute -->
+            <small style="color: #999; display: block; margin-top: 8px;">
+                Use modifiers: Ctrl, Alt, Shift + any key<br>
+                Examples: Ctrl+N, Ctrl+Shift+I, Ctrl+Alt+P
+            </small>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button id="saveSettings" class="btn btn--primary">Save Settings</button>
+            <button id="closeSettings" class="btn btn--secondary">Cancel</button>
+        </div>
+
+        <div id="settingsStatus" style="margin-top: 16px; display: none;"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
